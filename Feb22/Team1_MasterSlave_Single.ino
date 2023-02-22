@@ -158,7 +158,7 @@ void loop()
                 Z_Coord_Sender(coord_arr[i]);
 
             //ENTER YOUR TEAMS CODE HERE
-T
+
                 Serial.println("Now let's wait to simulate doing stuff");
                 delay(1000);
                 Serial.println("Humdy humdy hum");
