@@ -105,16 +105,16 @@ void Z_Coord_Sender(int coord)
     Wire.write(buf, sizeof(buf));      //writing header message to Z_motion, imitating protocol 
 
     //Master Sends coord to slave
-    Serial.println(coord_arr[i]);       //check printing correct coord
-    char buf_z[sizeof(coord_arr[i])];   //make char buffer size of integer, this buffer is overwritten each for loop iteration
-    memcpy(buf_z, &coord_arr[i], sizeof(coord_arr[i])); //dst, src, no of bytes
+    Serial.println(coord);       //check printing correct coord
+    char buf_z[sizeof(coord)];   //make char buffer size of integer, this buffer is overwritten each for loop iteration
+    memcpy(buf_z, &coord, sizeof(coord)); //dst, src, no of bytes
     Wire.write(buf_z, sizeof(buf_z));       // write address to read from, write specified number of bytes
 
     delay(100);  //delay for reception before ending transmission
     Wire.endTransmission();
       //Master requests from slave, message will be sent once motor stops moving
     int Z_Ready = 0;
-    while (Z_Ready != 1)
+    while (Z_Ready != 1)  //instead of polling this will be optimised to an interrupt 
       { //maybe add delay here to give motor time to turn away from current position 0
         Wire.requestFrom(Z_MOTION,1); //requesting 1 byte from Z pcb
         Z_Ready = Wire.read();    //Z-axis mcu sends 1 (the number) when motor is no longer turning
