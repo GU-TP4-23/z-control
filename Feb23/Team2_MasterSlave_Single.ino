@@ -1,4 +1,4 @@
-//--------Team 1 SLAVE/MASTER code
+//--------Team 2 SLAVE/MASTER code
 
 #include "hardware/i2c.h"
 #include <Wire.h>
@@ -27,7 +27,7 @@ byte MT1 = 3;  //Master transfer 1 byte, stage handover byte
 int R_LED_MASTER = 17;
 int G_LED_SLAVE = 16;
 int MASTERswitchSTATE;  //the switch only turns the MCU into a master, slave is activated automatically
-int MasterInit = 1;      //Team1 is initially master 
+int MasterInit = 0;      //Team2 is initially slave 
 int switch_pin = 1;  //switch is GPIO 1
 
 void setup()    
@@ -42,15 +42,15 @@ void setup()
     gpio_pull_up(4);      //sets up pull-up resistors on I2C pins, essential for I2C
     gpio_pull_up(5);
     if (MasterInit == 1)
-      {     //Master Setup: Team1 is configured to Master on I2C0 channel
+      {     //Master Setup: Team2 is configured to Master on I2C0 channel
         Wire.end();  
         Wire.begin(); 
         Serial.begin(9600);
       }   
     else if(MasterInit == 0)
-      {            //Slave Setup: Team1 is configured to Slave on I2C0 channel
+      {            //Slave Setup: Team2 is configured to Slave on I2C0 channel
         Wire.end();
-        Wire.begin(TEAM1);
+        Wire.begin(TEAM2);
         Serial.begin(9600); 
         Wire.onReceive(receiveEvent);
         Wire.onRequest(requestEvent);
@@ -59,12 +59,13 @@ void setup()
 
 void receiveEvent(int howMany)
   {   // howMANY is always equal to no. of bytes received
-    int Slave1Receives = Wire.read();       
-    //reads handover byte from master4
-    if (Slave1Receives == 3 )
-      {          //if team1 as slave receives a 3 from other team acting as master
+    int Slave2Receives = Wire.read();       
+    //reads handover byte from master1
+    MASTERswitchSTATE = 0; //this is for 2nd time around, so that switch does automatically turn on
+    if (Slave2Receives == 3 )
+      {          //if team2 as slave receives a 3 from other team acting as master
       Serial.println(3);
-      MasterInit = 1;                 //Now team1 can be initialised as master instead of slave
+      MasterInit = 1;                 //Now team2 can be initialised as master instead of slave
       Serial.println("Received Byte from Master");
       setup(); 
       }
@@ -74,13 +75,12 @@ void receiveEvent(int howMany)
       }  
   }
 
-
 void readSwitch()  
   {
     int sVal = digitalRead(switch_pin);
     if (sVal == 1) 
       {
-        MASTERswitchSTATE = 1;        
+        MASTERswitchSTATE = 1;
       }
     else
       {
@@ -152,7 +152,6 @@ void Z_Coord_Sender(int z_coord)
         Z_Ready = Wire.read();    //Z-axis mcu sends 1 (the number) when motor is no longer turning
         Serial.print("Z_Ready:\t");
         Serial.println(Z_Ready);
-        delay(100);
       }
     Z_Ready = 0;  
       //Master now needs to do individual job
@@ -162,7 +161,7 @@ void Z_Coord_Sender(int z_coord)
 
 void loop() 
   {
-    //TEAM1 has been initialised as MASTER
+    //TEAM2 has been initialised as MASTER
     if (MasterInit==1)
       {        
         Serial.println("Master! ");            //Prints to serial monitor
@@ -183,7 +182,7 @@ void loop()
             digitalWrite(R_LED_MASTER, HIGH);  //Master state LED goes HIGH
 
             int coord_arr[] = {-500,500}; 
-            int coord_num = sizeof(coord_arr)/4;  //since coord always integer, can divide total number of bytes to find number of elements
+            int coord_num = sizeof(coord_arr)/4;  //since coord always integer, can divide total number of bytes to find number of elements           
             Serial.print("Writing message:\n");
             for (int i=0;i<coord_num;i++)
               {   
@@ -204,27 +203,26 @@ void loop()
             Serial.println("Terminating transmission...");
             Serial.println("Transmission terminated.");
                 
-          
-            //Master Handover to Team 2
+            //Master Handover to Team 3
             delay(2000);
-            Wire.beginTransmission(TEAM2);  //This is sending handover to team2, Master1 writing to slave2
+            Wire.beginTransmission(TEAM3);  //This is sending handover to team2, Master1 writing to slave2
             Wire.write(MT1);        //WRITING MT1 BYTE = 3
             Wire.endTransmission(); 
             delay(100);
-            Serial.println("GOOD: Team1 has sent MT1 byte to team 2 ");
+            Serial.println("GOOD: Team2 has sent MT1 byte to team 3 ");
             delay(1000);
             MasterInit = 0;
             MASTERswitchSTATE = 0; //this is for 2nd time around, so that switch does automatically turn on
             setup();
           }
       }
-    // TEAM 1 has been initialised as SLAVE
+    // TEAM 2 has been initialised as SLAVE
     else if (MasterInit == 0) 
       {
         Serial.println("SLAVE! ");  
         if (MASTERswitchSTATE == 1)
           {
-            Serial.println("Team1 is now a slave ");
+            Serial.println("Team2 is now a slave ");
             digitalWrite(LED_BUILTIN, LOW);  //Board LED goes LOW for Slave operation
             digitalWrite(G_LED_SLAVE, HIGH);  //Slave LED goes HIGH
             digitalWrite(R_LED_MASTER, LOW);  //Master state LED goes LOW
@@ -233,7 +231,7 @@ void loop()
           }
         else if (MASTERswitchSTATE == 0) 
           {
-            Serial.println("Team1 is now a slave ");
+            Serial.println("Team2 is now a slave ");
             digitalWrite(LED_BUILTIN, LOW);  //Board LED goes LOW for Slave operation
             digitalWrite(G_LED_SLAVE, HIGH);  //Slave LED goes HIGH
             digitalWrite(R_LED_MASTER, LOW);  //Master state LED goes LOW
