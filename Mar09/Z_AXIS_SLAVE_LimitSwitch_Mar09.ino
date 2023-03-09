@@ -12,7 +12,6 @@
 #define stepMs2Pin 20     // M2 A4988 step enable
 #define stepMs3Pin 19     // M3 A4988 step enable
 #define upperLimit_pin 0
-#define voltage3v3 1
 
 const int stepsPerRevolution = 3200;
 AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin);
@@ -23,13 +22,11 @@ void setup()
  {
     stepper.setMaxSpeed(100);              // stepper max speed of steps per second
     stepper.setAcceleration(30);
-    pinMode(voltage3v3,OUTPUT);
     pinMode(upperLimit_pin, OUTPUT);            // homing switch pin
     pinMode(stepMs1Pin, OUTPUT);            // set Ms1Pin as an Outpu, Pin (21)
     pinMode(stepMs2Pin, OUTPUT);            // set Ms2Pin as an Outpu, Pin (20)         
     pinMode(stepMs3Pin, OUTPUT);            // set Ms3Pin as an Outpu, Pin (19)
     pinMode(LED_BUILTIN, OUTPUT);           // Built in LED goes high to indicate opperation function
-    digitalWrite(voltage3v3,HIGH);
     digitalWrite(stepMs1Pin,HIGH);          // microstepping A4988 pins MS1: 0 |full step, | 1 | 1/2 step, | 0 | 1/4 step, | 1 | 1/8 step, | 1 | 1/16 step,
     digitalWrite(stepMs2Pin,HIGH);          // microstepping A4988 pins MS2: 0 |full step, | 0 | 1/2 step, | 1 | 1/4 step, | 1 | 1/8 step, | 1 | 1/16 step,
     digitalWrite(stepMs3Pin,HIGH);          // microstepping A4988 pins MS3: 0 |full step, | 0 | 1/2 step, | 0 | 1/4 step, | 0 | 1/8 step, | 1 | 1/16 step,
